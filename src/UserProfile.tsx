@@ -18,30 +18,49 @@ const fetchUserDetails = (userId: string): Promise<UserDetailsResponse> =>
         );
     });
 
-const UserProfile = ({ userId }: { userId: string }) => {
+const Loader = () => 'loading...';
+
+const useUserDetails = (userId: string) => {
     const [userDetails, setUserDetails] = React.useState<UserDetailsResponse | null>(null);
+
     React.useEffect(() => {
         fetchUserDetails(userId).then(setUserDetails);
     }, [userId]);
+
+    return userDetails;
+};
+
+const UserDetails = ({ userDetails }: { userDetails: UserDetailsResponse }) => {
     return (
-        <div>
-            {userDetails ? (
-                <>
-                    <h2>{userDetails.name}</h2>
-                    <p>{userDetails.email}</p>
-                    <img src={userDetails.avatarUrl} alt="User Avatar" />
-                </>
-            ) : (
-                'loading...'
-            )}
-        </div>
+        <>
+            <h2>{userDetails.name}</h2>
+            <p>{userDetails.email}</p>
+            <img src={userDetails.avatarUrl} alt="User Avatar" />
+        </>
+    );
+};
+const UserProfileLayout = ({ children }: React.PropsWithChildren) => {
+    return <div>{children}</div>;
+};
+
+const UserProfile = ({ userDetails }: { userDetails: UserDetailsResponse | null }) => {
+    return userDetails ? <UserDetails userDetails={userDetails} /> : <Loader />;
+};
+
+const SelfLoadingUserProfile = ({ userId }: { userId: string }) => {
+    const userDetails = useUserDetails(userId);
+
+    return (
+        <UserProfileLayout>
+            <UserProfile userDetails={userDetails} />
+        </UserProfileLayout>
     );
 };
 
 export default function App() {
     return (
         <div className="App">
-            <UserProfile userId="123" />
+            <SelfLoadingUserProfile userId="123" />
         </div>
     );
 }
