@@ -43,8 +43,18 @@ const UserProfileLayout = ({ children }: React.PropsWithChildren) => {
     return <div>{children}</div>;
 };
 
-const UserProfile = ({ userDetails }: { userDetails: UserDetailsResponse | null }) => {
-    return userDetails ? <UserDetails userDetails={userDetails} /> : <Loader />;
+interface UserProfileProps {
+    userDetails: UserDetailsResponse | null;
+    LoaderComponent?: React.FunctionComponent;
+    renderUserDetails?: (userDetails: UserDetailsResponse) => JSX.Element;
+}
+
+const UserProfile = ({
+    userDetails,
+    LoaderComponent = Loader,
+    renderUserDetails = (details: UserDetailsResponse) => <UserDetails userDetails={details} />,
+}: UserProfileProps) => {
+    return userDetails ? renderUserDetails(userDetails) : <LoaderComponent />;
 };
 
 const SelfLoadingUserProfile = ({ userId }: { userId: string }) => {
