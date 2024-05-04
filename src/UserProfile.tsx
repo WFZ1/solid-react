@@ -4,6 +4,7 @@ type UserDetailsResponse = {
     name: string;
     email: string;
     avatarUrl: string;
+    mobilePhone: string;
 };
 
 interface AdminDetailsResponse extends UserDetailsResponse {
@@ -18,6 +19,7 @@ const fetchUserDetails = (userId: string): Promise<UserDetailsResponse> =>
                     name: 'Cat',
                     email: 'cat@mittens.meow',
                     avatarUrl: 'https://placekitten.com/100/100',
+                    mobilePhone: '+380987783322',
                 }),
             100
         );
@@ -31,6 +33,7 @@ const fetchAdminDetails = (adminId: string): Promise<AdminDetailsResponse> =>
                     name: 'Cat',
                     email: 'cat@mittens.meow',
                     avatarUrl: 'https://placekitten.com/100/100',
+                    mobilePhone: '+380992341221',
                     isAdmin: true,
                 }),
             100
@@ -59,25 +62,22 @@ const useAdminDetails = (adminId: string) => {
 
 const Loader = () => 'loading...';
 
-const UserDetails = ({ userDetails }: { userDetails: UserDetailsResponse }) => {
+type UserDetailsProps = Pick<UserDetailsResponse, 'name' | 'email' | 'avatarUrl'>;
+
+const UserDetails = ({ name, email, avatarUrl }: UserDetailsProps) => {
     return (
         <>
-            <h2>{userDetails.name}</h2>
-            <p>{userDetails.email}</p>
-            <img src={userDetails.avatarUrl} alt="User Avatar" />
+            <h2>{name}</h2>
+            <p>{email}</p>
+            <img src={avatarUrl} alt="User Avatar" />
         </>
     );
 };
 
-const AdminDetails = ({ adminDetails }: { adminDetails: AdminDetailsResponse }) => {
-    return (
-        <>
-            <h2>{adminDetails.name}</h2>
-            <p>{adminDetails.email}</p>
-            <img src={adminDetails.avatarUrl} alt="User Avatar" />
-            {adminDetails.isAdmin && <p>I am admin</p>}
-        </>
-    );
+type AdminDetailsProps = Pick<AdminDetailsResponse, 'isAdmin'>;
+
+const AdminDetails = ({ isAdmin }: AdminDetailsProps) => {
+    return <>{isAdmin && <p>I am admin</p>}</>;
 };
 
 interface ProfileProps<T> {
@@ -89,7 +89,7 @@ interface ProfileProps<T> {
 const Profile = <T extends UserDetailsResponse | null>({
     details,
     LoaderComponent = Loader,
-    renderDetails = (details: UserDetailsResponse) => <UserDetails userDetails={details} />,
+    renderDetails = (details: UserDetailsResponse) => <UserDetails {...details} />,
 }: ProfileProps<T>) => {
     return details ? renderDetails(details) : <LoaderComponent />;
 };
@@ -124,7 +124,12 @@ export default function App() {
             <SelfLoadingUserProfile id="123" />
             <SelfLoadingAdminProfile
                 id="321"
-                renderDetails={(details: AdminDetailsResponse) => <AdminDetails adminDetails={details} />}
+                renderDetails={(details: AdminDetailsResponse) => (
+                    <>
+                        <UserDetails {...details} />
+                        <AdminDetails isAdmin={details.isAdmin} />
+                    </>
+                )}
             />
         </div>
     );
