@@ -81,12 +81,12 @@ const AdminDetails = ({ adminDetails }: { adminDetails: AdminDetailsResponse }) 
 };
 
 interface ProfileProps<T> {
-    details: T | null;
+    details: T;
     LoaderComponent?: React.FunctionComponent;
-    renderDetails?: (details: T) => JSX.Element;
+    renderDetails?: (details: NonNullable<T>) => JSX.Element;
 }
 
-const Profile = <T extends UserDetailsResponse>({
+const Profile = <T extends UserDetailsResponse | null>({
     details,
     LoaderComponent = Loader,
     renderDetails = (details: UserDetailsResponse) => <UserDetails userDetails={details} />,
