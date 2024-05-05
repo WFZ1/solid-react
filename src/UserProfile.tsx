@@ -80,57 +80,45 @@ const AdminDetails = ({ isAdmin }: AdminDetailsProps) => {
     return <>{isAdmin && <p>I am admin</p>}</>;
 };
 
-interface ProfileProps<T> {
-    details: T;
-    LoaderComponent?: React.FunctionComponent;
-    renderDetails?: (details: NonNullable<T>) => JSX.Element;
-}
-
-const Profile = <T extends UserDetailsResponse | null>({
-    details,
-    LoaderComponent = Loader,
-    renderDetails = (details: UserDetailsResponse) => <UserDetails {...details} />,
-}: ProfileProps<T>) => {
-    return details ? renderDetails(details) : <LoaderComponent />;
-};
-
 const ProfileLayout = ({ children }: React.PropsWithChildren) => {
     return <div>{children}</div>;
 };
 
 interface SelfLoadingProfileProps<T> {
     id: string;
-    renderDetails?: (details: NonNullable<T>) => JSX.Element;
+    useDetails: (id: string) => T;
+    children: (details: NonNullable<T>) => JSX.Element;
 }
 
-const getSelfLoadingProfile =
-    <T extends UserDetailsResponse | null>(useDetails: (id: string) => T) =>
-    ({ id, renderDetails }: SelfLoadingProfileProps<T>) => {
-        const details = useDetails(id);
+const SelfLoadingProfile = <T extends UserDetailsResponse | null>({
+    id,
+    useDetails,
+    children,
+}: SelfLoadingProfileProps<T>) => {
+    const details = useDetails(id);
 
-        return (
-            <ProfileLayout>
-                <Profile details={details} renderDetails={renderDetails} />
-            </ProfileLayout>
-        );
-    };
-
-const SelfLoadingUserProfile = getSelfLoadingProfile(useUserDetails);
-const SelfLoadingAdminProfile = getSelfLoadingProfile(useAdminDetails);
+    return details ? children(details) : <Loader />;
+};
 
 export default function App() {
     return (
         <div className="App">
-            <SelfLoadingUserProfile id="123" />
-            <SelfLoadingAdminProfile
-                id="321"
-                renderDetails={(details: AdminDetailsResponse) => (
-                    <>
+            <SelfLoadingProfile id="123" useDetails={useUserDetails}>
+                {(details) => (
+                    <ProfileLayout>
+                        <UserDetails {...details} />
+                    </ProfileLayout>
+                )}
+            </SelfLoadingProfile>
+
+            <SelfLoadingProfile id="321" useDetails={useAdminDetails}>
+                {(details) => (
+                    <ProfileLayout>
                         <UserDetails {...details} />
                         <AdminDetails isAdmin={details.isAdmin} />
-                    </>
+                    </ProfileLayout>
                 )}
-            />
+            </SelfLoadingProfile>
         </div>
     );
 }
